@@ -61,18 +61,26 @@ if "%SKIP_SCRIPTS%"=="1" (
 ) else (
     echo.
     echo Copying files...
+
+    if not exist "%INSTALL_DIR%\bin" mkdir "%INSTALL_DIR%\bin" >nul 2>&1
+
     copy /Y "%~dp0cc" "%INSTALL_DIR%\cc" >nul
     if errorlevel 1 (
         echo [ERROR] Failed to copy cc
         pause
         exit /b 1
     )
+    copy /Y "%~dp0ccs" "%INSTALL_DIR%\ccs" >nul
     copy /Y "%~dp0cc.cmd" "%INSTALL_DIR%\cc.cmd" >nul
-    copy /Y "%~dp0cc" "%INSTALL_DIR%\ccs" >nul
     copy /Y "%~dp0ccs.cmd" "%INSTALL_DIR%\ccs.cmd" >nul
+    copy /Y "%~dp0cc.ps1" "%INSTALL_DIR%\cc.ps1" >nul
+    copy /Y "%~dp0ccs.ps1" "%INSTALL_DIR%\ccs.ps1" >nul
     copy /Y "%~dp0init.ps1" "%INSTALL_DIR%\init.ps1" >nul
+    copy /Y "%~dp0bin\cc-start.js" "%INSTALL_DIR%\bin\cc-start.js" >nul
+
     echo [OK] Scripts installed
     echo [OK] Commands available: cc and ccs
+    echo [OK] Node core installed: bin\cc-start.js
 )
 
 :: Create config directory

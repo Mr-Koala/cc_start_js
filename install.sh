@@ -167,7 +167,7 @@ step_ok "安装目录: ${INSTALL_DIR}"
 # ═══════════════════════════════════════════════════════════════
 # Step 3: 安装脚本
 # ═══════════════════════════════════════════════════════════════
-step_begin "安装启动脚本" "复制 cc / ccs 到目标目录..."
+step_begin "安装启动脚本" "复制 cc / ccs 与 Node 核心到目标目录..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKIP_SCRIPTS=0
@@ -182,19 +182,22 @@ if [[ -f "$INSTALL_DIR/cc" ]]; then
 fi
 
 if [[ "$SKIP_SCRIPTS" == "0" ]]; then
+    mkdir -p "$INSTALL_DIR/bin"
+
     cp "$SCRIPT_DIR/cc" "$INSTALL_DIR/cc"
-    chmod +x "$INSTALL_DIR/cc"
-    sed -i 's/\r$//' "$INSTALL_DIR/cc"
-    ln -sf "$INSTALL_DIR/cc" "$INSTALL_DIR/ccs"
-    # 创建 claude 符号链接，确保 cc 运行时能找到二进制
-    # （cc 脚本不加载 .bashrc，nvm 管理的 node/npm 不在 PATH 中）
-    local_claude=$(which claude 2>/dev/null || true)
-    if [[ -n "$local_claude" && "$local_claude" != "$INSTALL_DIR/claude" ]]; then
-        ln -sf "$local_claude" "$INSTALL_DIR/claude"
-        step_ok "claude → ${local_claude}"
-    fi
+    cp "$SCRIPT_DIR/ccs" "$INSTALL_DIR/ccs"
+    cp "$SCRIPT_DIR/bin/cc-start.js" "$INSTALL_DIR/bin/cc-start.js"
+
+    chmod +x "$INSTALL_DIR/cc" "$INSTALL_DIR/ccs" "$INSTALL_DIR/bin/cc-start.js"
+
+    # macOS(BSD sed) 与 GNU sed 兼容
+    sed -i '' 's/\r$//' "$INSTALL_DIR/cc" 2>/dev/null || sed -i 's/\r$//' "$INSTALL_DIR/cc"
+    sed -i '' 's/\r$//' "$INSTALL_DIR/ccs" 2>/dev/null || sed -i 's/\r$//' "$INSTALL_DIR/ccs"
+    sed -i '' 's/\r$//' "$INSTALL_DIR/bin/cc-start.js" 2>/dev/null || sed -i 's/\r$//' "$INSTALL_DIR/bin/cc-start.js"
+
     step_ok "cc  → ${INSTALL_DIR}/cc"
     step_ok "ccs → ${INSTALL_DIR}/ccs"
+    step_ok "node core → ${INSTALL_DIR}/bin/cc-start.js"
 fi
 
 # ═══════════════════════════════════════════════════════════════

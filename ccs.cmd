@@ -1,20 +1,18 @@
 @echo off
 setlocal
 
-set "BASH=D:\IDE\Git\Git\usr\bin\bash.exe"
-if not exist "%BASH%" set "BASH=C:\Program Files\Git\bin\bash.exe"
-if not exist "%BASH%" set "BASH=C:\Program Files (x86)\Git\bin\bash.exe"
-
-if not exist "%BASH%" (
-    echo Error: Git Bash not found.
-    exit /b 1
-)
-
 set "SCRIPT_DIR=%~dp0"
+set "NODE_ENTRY=%SCRIPT_DIR%bin\cc-start.js"
 
-if not exist "%SCRIPT_DIR%ccs" (
-    echo Error: ccs script not found in %SCRIPT_DIR%
+where node >nul 2>&1
+if errorlevel 1 (
+    echo Error: node is required but not found in PATH.
     exit /b 1
 )
 
-"%BASH%" -l "%SCRIPT_DIR%ccs" %*
+if not exist "%NODE_ENTRY%" (
+    echo Error: Node entry not found: %NODE_ENTRY%
+    exit /b 1
+)
+
+node "%NODE_ENTRY%" %*

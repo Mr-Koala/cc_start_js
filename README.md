@@ -23,6 +23,7 @@ CC Start 让你彻底告别这些折腾：
 | | |
 |---|---|
 | 🚀 **一条命令装好一切** | 自动检测 & 安装 Node.js、Claude Code，脚本直达 PATH，安装即用，零手动 |
+| 🧠 **Node.js 核心架构** | 启动逻辑统一由 Node.js 驱动，JSON 合并更稳，跨平台兼容更好 |
 | 🎯 **多模型无缝切换** | `cc kimi` → `cc qwen` → `cc glm` — 一条命令换模型，比切歌还流畅 |
 | 🪟 **多窗口独立运行** | 每个终端独立配置互不干扰，4 个窗口跑 4 个模型，随心所欲 |
 | ➕ **任意模型随心加** | `cc add` 三步上手，兼容任何 Claude API 服务，不挑品牌不限数量 |
@@ -50,11 +51,8 @@ chmod +x install.sh && ./install.sh
 ✅ Windows 自动配置 PATH，无需手动操作
 ```
 
-> **macOS 用户注意**：系统自带 bash 版本为 3.2，不支持关联数组。请先通过 Homebrew 安装新版 bash：
-> ```bash
-> brew install bash
-> ```
-> Linux 用户无需此步骤，系统自带 bash 4.0+ 已满足要求。
+> 当前版本核心逻辑已迁移到 **Node.js**，不再依赖 Bash 4 关联数组。
+> 只要 Node.js 可用（建议 18+），macOS/Linux/Windows 均可运行。
 
 > **安装后提示命令找不到？** Windows 安装程序会自动添加 PATH，但如果失效请手动添加：
 > `系统属性 → 环境变量 → 编辑用户 PATH → 新建 → %USERPROFILE%\.local\bin`
@@ -115,7 +113,8 @@ $ cc
 | `cc edit [模型名]` | 编辑已有模型配置（支持修改启动命令名称） |
 | `cc remove [模型名]` | 删除模型配置 |
 | `cc ls` | 列出所有已配置模型 |
-| `cc sync [模型名]` | 同步当前 MCP/插件配置到指定模型 |
+| `cc sync [模型名]` | 将全局 `~/.claude/settings.json` 同步到模型文件，并保留该模型 API 字段 |
+| `cc upgrade` | 扫描并升级 DeepSeek 配置（补齐 `[1m]` 与扩展字段） |
 | `cc reset` | 清空所有模型配置 |
 | `cc -h` | 查看帮助 |
 
@@ -160,35 +159,46 @@ cc add
 # 按提示依次输入上述信息即可
 ```
 
-配置文件保存在 `~/.claude/models/` 目录下，格式如下：
+配置文件保存在 `~/.claude/models/` 目录下，推荐格式如下：
 
 ```json
 {
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "your-api-key",
-    "ANTHROPIC_BASE_URL": "https://api.example.com/anthropic",
-    "ANTHROPIC_MODEL": "model-name"
-  }
+  "ANTHROPIC_AUTH_TOKEN": "your-api-key",
+  "ANTHROPIC_BASE_URL": "https://api.example.com/anthropic",
+  "ANTHROPIC_MODEL": "model-name",
+  "ANTHROPIC_DEFAULT_OPUS_MODEL": "model-name",
+  "ANTHROPIC_DEFAULT_SONNET_MODEL": "model-name",
+  "ANTHROPIC_DEFAULT_HAIKU_MODEL": "model-name",
+  "CLAUDE_CODE_SUBAGENT_MODEL": "model-name",
+  "skipWebFetchPreflight": true
 }
 ```
 
 ## 工作原理
 
-CC Start 通过 Claude Code 的 `--settings` 参数为每个实例指定独立的配置文件：
+当前版本采用 **Node.js 核心 + 多平台薄包装入口**：
+
+- `cc` / `ccs`（macOS/Linux）→ 调用 `node bin/cc-start.js`
+- `cc.cmd` / `ccs.cmd`（Windows）→ 直接调用 `node bin\\cc-start.js`
+- `cc.ps1` / `ccs.ps1`（PowerShell）→ 调用对应 `.cmd`
+
+启动模型时，CC Start 会：
+
+1. 读取全局 `~/.claude/settings.json`（若存在）
+2. 用所选模型的 API 字段覆盖 `env`
+3. 生成临时 settings 文件
+4. 执行：
 
 ```bash
-claude --settings ~/.claude/models/kimi.json
-claude --settings ~/.claude/models/qwen.json
+claude --settings <临时文件>
 ```
 
-每个窗口使用独立配置，多窗口同时运行互不干扰。不同于旧式的替换 `settings.json` 方案，无需复制或覆盖全局配置。
+这样可保留全局 MCP/插件/hook 配置，同时按会话隔离模型凭据。
 
 ## 依赖
 
 - [Claude Code](https://claude.ai/code) — 安装脚本会自动检测并在缺失时通过 npm 安装
-- Git Bash (Windows) 或 Bash 4.0+ (Mac/Linux)
-  - macOS：系统自带 bash 3.2，需 `brew install bash`
-  - Linux：主流发行版自带 bash 4.x/5.x，无需额外安装
+- [Node.js](https://nodejs.org/) 18+
 
 ## License
 
