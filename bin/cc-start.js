@@ -51,8 +51,21 @@ function listModels() {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+function showBanner() {
+  console.log(String.raw`
+  _____  _____         _____  _______   ___      _____  _______
+ / ____|/ ____|       / ____||__   __| /   \    |  __ \|__   __|
+| |    | |           | (___     | |   /  ^  \   | |__) |  | |
+| |    | |            \___ \    | |  /  /_\  \  |  _  /   | |
+| |____| |____        ____) |   | | /  _____  \ | | \ \   | |
+ \_____|\_____|      |_____/    |_|/__/     \__\|_|  \_\  |_|
+                                  |__|     |__|
+`);
+  console.log('  多模型，一个工具就够了\n');
+}
+
 function help() {
-  console.log(`CC Start (Node.js core)\n\nUsage:\n  cc                 Interactive model selector\n  cc <model>         Launch Claude Code with model config\n  cc add             Add model config\n  cc edit [model]    Edit model config\n  cc remove [model]  Remove model config\n  cc ls              List model configs\n  cc sync [model]    Sync global settings into model file (keep model env)\n  cc upgrade         Upgrade DeepSeek configs (fill missing defaults)\n  cc reset           Delete all model configs\n  cc -h              Show help\n`);
+  console.log(`CC Start (Node.js core)\n\nUsage:\n  ccs                Interactive model selector\n  ccs <model>        Launch Claude Code with model config\n  ccs add            Add model config\n  ccs edit [model]   Edit model config\n  ccs remove [model] Remove model config\n  ccs ls             List model configs\n  ccs sync [model]   Sync global settings into model file (keep model env)\n  ccs upgrade        Upgrade DeepSeek configs (fill missing defaults)\n  ccs reset          Delete all model configs\n  ccs -h             Show help\n`);
 }
 
 function printModels() {
@@ -366,9 +379,10 @@ async function cmdReset() {
 }
 
 async function interactive() {
+  showBanner();
   const models = listModels();
   if (!models.length) {
-    console.log('No models found. Use: cc add');
+    console.log('No models found. Use: ccs add');
     return;
   }
   const selected = await pickModelOrArg();
